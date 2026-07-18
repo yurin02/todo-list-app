@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Todo List{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="app-header">
+      <h1 class="app-title">Todo List</h1>
+    </header>
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>
