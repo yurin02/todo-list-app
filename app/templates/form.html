@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'new' %}新規登録{% else %}編集{% endif %} - Todo List{% endblock %}
+{% block content %}
+<div class="form-card">
+  <h2 class="form-title">{% if mode == 'new' %}新しいTodoを登録{% else %}Todoを編集{% endif %}</h2>
+  <form method="post" action="{% if mode == 'new' %}/todos{% else %}/todos/{{ todo.ID }}{% endif %}" class="todo-form">
+    <label class="form-label" for="title">タイトル</label>
+    <input type="text" id="title" name="title" value="{{ todo.Title or '' }}" required class="form-input">
+
+    <label class="form-label" for="content">内容</label>
+    <textarea id="content" name="content" rows="4" class="form-input">{{ todo.Content or '' }}</textarea>
+
+    <label class="form-label" for="due_date">期日</label>
+    <input type="date" id="due_date" name="due_date" value="{{ todo.DueDate or '' }}" class="form-input">
+
+    <div class="form-actions">
+      <a href="/" class="btn btn-ghost">キャンセル</a>
+      <button type="submit" class="btn btn-primary">{% if mode == 'new' %}登録する{% else %}更新する{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

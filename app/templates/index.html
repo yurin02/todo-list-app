@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Todo List{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <a href="/todos/new" class="btn btn-primary">+ 新しいTodoを追加</a>
+</div>
+
+{% if todos %}
+<ul class="todo-list">
+  {% for todo in todos %}
+  <li class="todo-card {% if todo.Status == 'done' %}is-done{% endif %} {% if todo.is_overdue %}is-overdue{% endif %}">
+    <form action="/todos/{{ todo.ID }}/toggle" method="post" class="todo-toggle-form">
+      <button type="submit" class="checkbox {% if todo.Status == 'done' %}checked{% endif %}" aria-label="完了/未完了を切り替え"></button>
+    </form>
+    <div class="todo-body">
+      <div class="todo-header">
+        <h2 class="todo-title">{{ todo.Title }}</h2>
+        {% if todo.DueDate %}
+          <span class="badge {% if todo.is_overdue %}badge-overdue{% elif todo.Status == 'done' %}badge-done{% else %}badge-due{% endif %}">
+            {{ todo.DueDate }}{% if todo.is_overdue %} 期限切れ{% endif %}
+          </span>
+        {% endif %}
+      </div>
+      {% if todo.Content %}
+      <p class="todo-content">{{ todo.Content }}</p>
+      {% endif %}
+    </div>
+    <div class="todo-actions">
+      <a href="/todos/{{ todo.ID }}/edit" class="btn btn-ghost">編集</a>
+      <form action="/todos/{{ todo.ID }}/delete" method="post" onsubmit="return confirm('このTodoを削除しますか？');">
+        <button type="submit" class="btn btn-danger">削除</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty-state">
+  <p>まだTodoがありません。</p>
+  <a href="/todos/new" class="btn btn-primary">最初のTodoを追加</a>
+</div>
+{% endif %}
+{% endblock %}
