@@ -15,6 +15,10 @@ HEADERS = ["ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedA
 STATUS_PENDING = "pending"
 STATUS_DONE = "done"
 
+STATUS_COLUMN_LETTER = chr(ord("A") + HEADERS.index("Status"))
+DONE_HIGHLIGHT_FORMULA = f'=${STATUS_COLUMN_LETTER}2="{STATUS_DONE}"'
+DONE_HIGHLIGHT_COLOR = {"red": 0.85, "green": 0.97, "blue": 0.88}
+
 
 @lru_cache(maxsize=1)
 def _get_client() -> gspread.Client:
@@ -33,7 +37,51 @@ def _get_worksheet() -> gspread.Worksheet:
         worksheet = spreadsheet.add_worksheet(title=SHEET_NAME, rows=1000, cols=len(HEADERS))
     if worksheet.row_values(1) != HEADERS:
         worksheet.update("A1", [HEADERS])
+    _ensure_done_highlight_rule(worksheet)
     return worksheet
+
+
+def _ensure_done_highlight_rule(worksheet: gspread.Worksheet) -> None:
+    spreadsheet = worksheet.spreadsheet
+    metadata = spreadsheet.fetch_sheet_metadata()
+    sheet_meta = next(
+        (s for s in metadata["sheets"] if s["properties"]["sheetId"] == worksheet.id),
+        None,
+    )
+    existing_rules = (sheet_meta or {}).get("conditionalFormats", [])
+    for rule in existing_rules:
+        values = rule.get("booleanRule", {}).get("condition", {}).get("values", [])
+        if values and values[0].get("userEnteredValue") == DONE_HIGHLIGHT_FORMULA:
+            return
+
+    spreadsheet.batch_update(
+        {
+            "requests": [
+                {
+                    "addConditionalFormatRule": {
+                        "rule": {
+                            "ranges": [
+                                {
+                                    "sheetId": worksheet.id,
+                                    "startRowIndex": 1,
+                                    "startColumnIndex": 0,
+                                    "endColumnIndex": len(HEADERS),
+                                }
+                            ],
+                            "booleanRule": {
+                                "condition": {
+                                    "type": "CUSTOM_FORMULA",
+                                    "values": [{"userEnteredValue": DONE_HIGHLIGHT_FORMULA}],
+                                },
+                                "format": {"backgroundColor": DONE_HIGHLIGHT_COLOR},
+                            },
+                        },
+                        "index": 0,
+                    }
+                }
+            ]
+        }
+    )
 
 
 def _now() -> str:
