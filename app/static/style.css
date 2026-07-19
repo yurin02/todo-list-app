@@ -190,7 +190,11 @@ body {
 }
 
 .todo-card.is-done {
-  opacity: 0.7;
+  opacity: 0.85;
+  background: var(--success-bg);
+  border-color: var(--success);
+  border-left-width: 4px;
+  padding-left: 15px;
 }
 
 .todo-toggle-form {
