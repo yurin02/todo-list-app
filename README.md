@@ -64,7 +64,7 @@ uvicorn app.main:app --reload
 4. 環境変数タブで `GOOGLE_CREDENTIALS_JSON` と `GOOGLE_SHEET_ID` を設定(値は上記と同じ)
 5. デプロイ完了後に発行されるURLで公開される
 
-デプロイ済みURL: (デプロイ後にここへ追記)
+デプロイ済みURL: https://todo-list-app-g6c7.onrender.com
 
 ## データ構造(スプレッドシート `Todos` シート)
 
