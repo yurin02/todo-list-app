@@ -15,8 +15,10 @@
     <div class="todo-body">
       <div class="todo-header">
         <h2 class="todo-title">{{ todo.Title }}</h2>
-        {% if todo.DueDate %}
-          <span class="badge {% if todo.is_overdue %}badge-overdue{% elif todo.Status == 'done' %}badge-done{% else %}badge-due{% endif %}">
+        {% if todo.Status == 'done' %}
+          <span class="badge badge-done">完了{% if todo.DueDate %} ・ {{ todo.DueDate }}{% endif %}</span>
+        {% elif todo.DueDate %}
+          <span class="badge {% if todo.is_overdue %}badge-overdue{% else %}badge-due{% endif %}">
             {{ todo.DueDate }}{% if todo.is_overdue %} 期限切れ{% endif %}
           </span>
         {% endif %}
