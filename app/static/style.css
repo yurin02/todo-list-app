@@ -1,15 +1,15 @@
 :root {
-  --bg-gradient: linear-gradient(135deg, #fff5fa 0%, #fce7f3 45%, #fbcfe8 100%);
+  --bg-gradient: linear-gradient(135deg, #eef6ff 0%, #c7e9f7 45%, #7dd3fc 100%);
   --surface: #ffffff;
-  --surface-alt: #fdf2f8;
-  --border: #f3d9e7;
-  --text-primary: #2e1b26;
-  --text-secondary: #6b5563;
+  --surface-alt: #eaf6ff;
+  --border: #bce0f0;
+  --text-primary: #1a2b42;
+  --text-secondary: #52667a;
 
-  --accent: #ec4899;
-  --accent-2: #d946ef;
-  --accent-text: #be185d;
-  --accent-glow: rgba(236, 72, 153, 0.35);
+  --accent: #2563eb;
+  --accent-2: #0891b2;
+  --accent-text: #1d4ed8;
+  --accent-glow: rgba(37, 99, 235, 0.35);
 
   --danger: #ef4444;
   --danger-dark: #b91c1c;
@@ -23,26 +23,26 @@
   --overdue-text: #b91c1c;
   --overdue-glow: rgba(239, 68, 68, 0.35);
 
-  --due-bg: #fce7f3;
-  --due-text: #be185d;
+  --due-bg: #dbeafe;
+  --due-text: #1d4ed8;
 
-  --shadow-md: 0 8px 24px rgba(46, 27, 38, 0.08);
-  --shadow-lg: 0 16px 40px rgba(46, 27, 38, 0.14);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.14);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-gradient: linear-gradient(135deg, #240f1d 0%, #331528 45%, #3d1a30 100%);
-    --surface: #2b1624;
-    --surface-alt: #36192c;
-    --border: #4d2a3f;
-    --text-primary: #f9eef4;
-    --text-secondary: #cba7bd;
+    --bg-gradient: linear-gradient(135deg, #071a2c 0%, #0b2c46 45%, #0e3a52 100%);
+    --surface: #0d2038;
+    --surface-alt: #12304e;
+    --border: #1e4a68;
+    --text-primary: #eaf2fb;
+    --text-secondary: #9fb8d3;
 
-    --accent: #f472b6;
-    --accent-2: #e879f9;
-    --accent-text: #fbcfe8;
-    --accent-glow: rgba(244, 114, 182, 0.45);
+    --accent: #38bdf8;
+    --accent-2: #0891b2;
+    --accent-text: #bae6fd;
+    --accent-glow: rgba(56, 189, 248, 0.45);
 
     --danger: #f87171;
     --danger-dark: #fca5a5;
@@ -56,8 +56,8 @@
     --overdue-text: #fca5a5;
     --overdue-glow: rgba(248, 113, 113, 0.45);
 
-    --due-bg: rgba(244, 114, 182, 0.15);
-    --due-text: #fbcfe8;
+    --due-bg: rgba(56, 189, 248, 0.15);
+    --due-text: #bae6fd;
 
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
@@ -90,10 +90,7 @@ body {
   margin: 0;
   font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .container {
@@ -129,7 +126,7 @@ body {
 
 .btn-primary {
   color: #ffffff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   box-shadow: 0 4px 14px var(--accent-glow);
 }
 
