@@ -10,7 +10,10 @@ from google.oauth2.service_account import Credentials
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 SHEET_NAME = "Todos"
-HEADERS = ["ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt", "Priority", "Category", "Tags"]
+HEADERS = [
+    "ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt",
+    "Priority", "Category", "Tags", "Source",
+]
 
 STATUS_PENDING = "pending"
 STATUS_DONE = "done"
@@ -26,6 +29,10 @@ CATEGORIES = {
     "personal": "私用",
 }
 DEFAULT_CATEGORY = "personal"
+
+SOURCE_WEB = "web"
+SOURCE_LINE = "line"
+DEFAULT_SOURCE = SOURCE_WEB
 
 
 def _col_letter(index0: int) -> str:
@@ -120,6 +127,8 @@ def _normalize(todo: dict) -> dict:
     if todo.get("Category") not in CATEGORIES:
         todo["Category"] = DEFAULT_CATEGORY
     todo["TagList"] = _parse_tags(todo.get("Tags") or "")
+    if not todo.get("Source"):
+        todo["Source"] = DEFAULT_SOURCE
     return todo
 
 
@@ -167,7 +176,10 @@ def create_todo(
     worksheet = _get_worksheet()
     todo_id = str(uuid.uuid4())
     now = _now()
-    row = [todo_id, title, content, due_date, STATUS_PENDING, now, now, priority, category, _format_tags(tags)]
+    row = [
+        todo_id, title, content, due_date, STATUS_PENDING, now, now,
+        priority, category, _format_tags(tags), SOURCE_WEB,
+    ]
     worksheet.append_row(row, value_input_option="USER_ENTERED")
     return _normalize(dict(zip(HEADERS, row)))
 
@@ -185,11 +197,13 @@ def update_todo(
     row_index = _find_row_index(todo_id)
     status_col = HEADERS.index("Status") + 1
     created_col = HEADERS.index("CreatedAt") + 1
+    source_col = HEADERS.index("Source") + 1
     current_status = worksheet.cell(row_index, status_col).value
     created_at = worksheet.cell(row_index, created_col).value
+    current_source = worksheet.cell(row_index, source_col).value or DEFAULT_SOURCE
     row = [
         todo_id, title, content, due_date, current_status, created_at, _now(),
-        priority, category, _format_tags(tags),
+        priority, category, _format_tags(tags), current_source,
     ]
     worksheet.update(
         f"A{row_index}:{LAST_COLUMN_LETTER}{row_index}", [row], value_input_option="USER_ENTERED"
