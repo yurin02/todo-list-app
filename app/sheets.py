@@ -64,7 +64,42 @@ def _get_worksheet() -> gspread.Worksheet:
     if worksheet.row_values(1) != HEADERS:
         worksheet.update("A1", [HEADERS])
     _ensure_done_highlight_rule(worksheet)
+    _ensure_column_formats(worksheet)
     return worksheet
+
+
+def _ensure_column_formats(worksheet: gspread.Worksheet) -> None:
+    # New columns added after the sheet already existed can inherit the
+    # DATE_TIME format of the last pre-existing column (UpdatedAt) when the
+    # grid auto-expands. A plain number written under USER_ENTERED into a
+    # cell that already has a DATE_TIME format gets reinterpreted as a date
+    # serial instead of staying a plain number, so pin the correct format
+    # explicitly for every non-date column.
+    text_columns = ["Category", "Tags", "Source"]
+    number_columns = ["Priority"]
+    time_columns = ["DueTime"]
+
+    def _format_request(column_name: str, number_format: dict) -> dict:
+        col_index = HEADERS.index(column_name)
+        return {
+            "repeatCell": {
+                "range": {
+                    "sheetId": worksheet.id,
+                    "startRowIndex": 1,
+                    "startColumnIndex": col_index,
+                    "endColumnIndex": col_index + 1,
+                },
+                "cell": {"userEnteredFormat": {"numberFormat": number_format}},
+                "fields": "userEnteredFormat.numberFormat",
+            }
+        }
+
+    requests = (
+        [_format_request(c, {"type": "TEXT"}) for c in text_columns]
+        + [_format_request(c, {"type": "NUMBER", "pattern": "0"}) for c in number_columns]
+        + [_format_request(c, {"type": "TIME", "pattern": "h:mm"}) for c in time_columns]
+    )
+    worksheet.spreadsheet.batch_update({"requests": requests})
 
 
 def _ensure_done_highlight_rule(worksheet: gspread.Worksheet) -> None:
