@@ -63,6 +63,7 @@ def create_todo(
     due_date: str = Form(""),
     priority: int = Form(sheets.DEFAULT_PRIORITY),
     category: str = Form(sheets.DEFAULT_CATEGORY),
+    tags: str = Form(""),
 ):
     sheets.create_todo(
         title=title,
@@ -70,6 +71,7 @@ def create_todo(
         due_date=due_date,
         priority=_clamp_priority(priority),
         category=_clean_category(category),
+        tags=tags,
     )
     return RedirectResponse(url="/", status_code=303)
 
@@ -91,6 +93,7 @@ def update_todo(
     due_date: str = Form(""),
     priority: int = Form(sheets.DEFAULT_PRIORITY),
     category: str = Form(sheets.DEFAULT_CATEGORY),
+    tags: str = Form(""),
 ):
     sheets.update_todo(
         todo_id,
@@ -99,6 +102,7 @@ def update_todo(
         due_date=due_date,
         priority=_clamp_priority(priority),
         category=_clean_category(category),
+        tags=tags,
     )
     return RedirectResponse(url="/", status_code=303)
 

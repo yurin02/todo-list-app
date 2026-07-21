@@ -10,7 +10,7 @@ from google.oauth2.service_account import Credentials
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 SHEET_NAME = "Todos"
-HEADERS = ["ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt", "Priority", "Category"]
+HEADERS = ["ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt", "Priority", "Category", "Tags"]
 
 STATUS_PENDING = "pending"
 STATUS_DONE = "done"
@@ -106,11 +106,20 @@ def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+def _parse_tags(raw: str) -> list[str]:
+    return [t.strip() for t in raw.split(",") if t.strip()]
+
+
+def _format_tags(raw: str) -> str:
+    return ",".join(_parse_tags(raw))
+
+
 def _normalize(todo: dict) -> dict:
     priority = todo.get("Priority")
     todo["Priority"] = int(priority) if priority not in (None, "") else DEFAULT_PRIORITY
     if todo.get("Category") not in CATEGORIES:
         todo["Category"] = DEFAULT_CATEGORY
+    todo["TagList"] = _parse_tags(todo.get("Tags") or "")
     return todo
 
 
@@ -153,11 +162,12 @@ def create_todo(
     due_date: str,
     priority: int = DEFAULT_PRIORITY,
     category: str = DEFAULT_CATEGORY,
+    tags: str = "",
 ) -> dict:
     worksheet = _get_worksheet()
     todo_id = str(uuid.uuid4())
     now = _now()
-    row = [todo_id, title, content, due_date, STATUS_PENDING, now, now, priority, category]
+    row = [todo_id, title, content, due_date, STATUS_PENDING, now, now, priority, category, _format_tags(tags)]
     worksheet.append_row(row, value_input_option="USER_ENTERED")
     return _normalize(dict(zip(HEADERS, row)))
 
@@ -169,6 +179,7 @@ def update_todo(
     due_date: str,
     priority: int = DEFAULT_PRIORITY,
     category: str = DEFAULT_CATEGORY,
+    tags: str = "",
 ) -> None:
     worksheet = _get_worksheet()
     row_index = _find_row_index(todo_id)
@@ -176,7 +187,10 @@ def update_todo(
     created_col = HEADERS.index("CreatedAt") + 1
     current_status = worksheet.cell(row_index, status_col).value
     created_at = worksheet.cell(row_index, created_col).value
-    row = [todo_id, title, content, due_date, current_status, created_at, _now(), priority, category]
+    row = [
+        todo_id, title, content, due_date, current_status, created_at, _now(),
+        priority, category, _format_tags(tags),
+    ]
     worksheet.update(
         f"A{row_index}:{LAST_COLUMN_LETTER}{row_index}", [row], value_input_option="USER_ENTERED"
     )

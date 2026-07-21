@@ -37,6 +37,13 @@
       {% if todo.Content %}
       <p class="todo-content">{{ todo.Content }}</p>
       {% endif %}
+      {% if todo.TagList %}
+      <div class="tag-list">
+        {% for tag in todo.TagList %}
+        <span class="tag-chip">#{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
     <div class="todo-actions">
       <a href="/todos/{{ todo.ID }}/edit" class="btn btn-ghost">編集</a>

@@ -30,6 +30,9 @@
       {% endfor %}
     </select>
 
+    <label class="form-label" for="tags">タグ（カンマ区切りで複数入力可）</label>
+    <input type="text" id="tags" name="tags" value="{{ todo.Tags or '' }}" placeholder="例: 急ぎ,経理" class="form-input">
+
     <div class="form-actions">
       <a href="/" class="btn btn-ghost">キャンセル</a>
       <button type="submit" class="btn btn-primary">{% if mode == 'new' %}登録する{% else %}更新する{% endif %}</button>
