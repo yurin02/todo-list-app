@@ -30,7 +30,13 @@ def index(request: Request, sort: str = sheets.DEFAULT_SORT):
         sort = sheets.DEFAULT_SORT
     todos = _with_overdue_flag(sheets.list_todos(sort=sort))
     return templates.TemplateResponse(
-        "index.html", {"request": request, "todos": todos, "current_sort": sort}
+        "index.html",
+        {
+            "request": request,
+            "todos": todos,
+            "current_sort": sort,
+            "category_labels": sheets.CATEGORIES,
+        },
     )
 
 
@@ -38,12 +44,16 @@ def index(request: Request, sort: str = sheets.DEFAULT_SORT):
 def new_todo_form(request: Request):
     return templates.TemplateResponse(
         "form.html",
-        {"request": request, "mode": "new", "todo": {}},
+        {"request": request, "mode": "new", "todo": {}, "categories": sheets.CATEGORIES},
     )
 
 
 def _clamp_priority(priority: int) -> int:
     return max(sheets.PRIORITY_MIN, min(sheets.PRIORITY_MAX, priority))
+
+
+def _clean_category(category: str) -> str:
+    return category if category in sheets.CATEGORIES else sheets.DEFAULT_CATEGORY
 
 
 @app.post("/todos")
@@ -52,8 +62,15 @@ def create_todo(
     content: str = Form(""),
     due_date: str = Form(""),
     priority: int = Form(sheets.DEFAULT_PRIORITY),
+    category: str = Form(sheets.DEFAULT_CATEGORY),
 ):
-    sheets.create_todo(title=title, content=content, due_date=due_date, priority=_clamp_priority(priority))
+    sheets.create_todo(
+        title=title,
+        content=content,
+        due_date=due_date,
+        priority=_clamp_priority(priority),
+        category=_clean_category(category),
+    )
     return RedirectResponse(url="/", status_code=303)
 
 
@@ -62,7 +79,7 @@ def edit_todo_form(request: Request, todo_id: str):
     todo = sheets.get_todo(todo_id)
     return templates.TemplateResponse(
         "form.html",
-        {"request": request, "mode": "edit", "todo": todo},
+        {"request": request, "mode": "edit", "todo": todo, "categories": sheets.CATEGORIES},
     )
 
 
@@ -73,9 +90,15 @@ def update_todo(
     content: str = Form(""),
     due_date: str = Form(""),
     priority: int = Form(sheets.DEFAULT_PRIORITY),
+    category: str = Form(sheets.DEFAULT_CATEGORY),
 ):
     sheets.update_todo(
-        todo_id, title=title, content=content, due_date=due_date, priority=_clamp_priority(priority)
+        todo_id,
+        title=title,
+        content=content,
+        due_date=due_date,
+        priority=_clamp_priority(priority),
+        category=_clean_category(category),
     )
     return RedirectResponse(url="/", status_code=303)
 

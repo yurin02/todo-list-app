@@ -22,6 +22,14 @@
       <option value="4" {% if current_priority|int == 4 %}selected{% endif %}>4（高）</option>
     </select>
 
+    <label class="form-label" for="category">カテゴリ</label>
+    <select id="category" name="category" class="form-input">
+      {% set current_category = todo.Category or "personal" %}
+      {% for value, label in categories.items() %}
+      <option value="{{ value }}" {% if current_category == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
     <div class="form-actions">
       <a href="/" class="btn btn-ghost">キャンセル</a>
       <button type="submit" class="btn btn-primary">{% if mode == 'new' %}登録する{% else %}更新する{% endif %}</button>

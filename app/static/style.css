@@ -26,6 +26,15 @@
   --due-bg: #dbeafe;
   --due-text: #1d4ed8;
 
+  --cat-work-bg: #e0e7ff;
+  --cat-work-text: #4338ca;
+  --cat-secondhand-bg: #fef3c7;
+  --cat-secondhand-text: #b45309;
+  --cat-chatbot-bg: #f3e8ff;
+  --cat-chatbot-text: #7e22ce;
+  --cat-personal-bg: #f1f5f9;
+  --cat-personal-text: #475569;
+
   --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.14);
 }
@@ -58,6 +67,15 @@
 
     --due-bg: rgba(56, 189, 248, 0.15);
     --due-text: #bae6fd;
+
+    --cat-work-bg: rgba(129, 140, 248, 0.18);
+    --cat-work-text: #c7d2fe;
+    --cat-secondhand-bg: rgba(251, 191, 36, 0.18);
+    --cat-secondhand-text: #fde68a;
+    --cat-chatbot-bg: rgba(192, 132, 252, 0.18);
+    --cat-chatbot-text: #e9d5ff;
+    --cat-personal-bg: rgba(148, 163, 184, 0.18);
+    --cat-personal-text: #e2e8f0;
 
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
@@ -351,6 +369,26 @@ body {
   background: var(--overdue-bg);
   color: var(--overdue-text);
   box-shadow: 0 0 10px var(--overdue-glow);
+}
+
+.badge-category-work {
+  background: var(--cat-work-bg);
+  color: var(--cat-work-text);
+}
+
+.badge-category-secondhand {
+  background: var(--cat-secondhand-bg);
+  color: var(--cat-secondhand-text);
+}
+
+.badge-category-chatbot {
+  background: var(--cat-chatbot-bg);
+  color: var(--cat-chatbot-text);
+}
+
+.badge-category-personal {
+  background: var(--cat-personal-bg);
+  color: var(--cat-personal-text);
 }
 
 /* Empty state */
