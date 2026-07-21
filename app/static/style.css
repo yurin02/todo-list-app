@@ -310,6 +310,39 @@ body {
   color: var(--text-secondary);
 }
 
+.todo-content-wrap.is-collapsible {
+  max-height: 4.5em;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
+
+.todo-content-wrap.is-collapsible.is-expanded {
+  max-height: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.content-toggle {
+  display: block;
+  margin: 4px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.content-toggle:hover {
+  text-decoration: underline;
+}
+
+.todo-content a {
+  color: var(--accent-text);
+}
+
 .tag-list {
   display: flex;
   flex-wrap: wrap;

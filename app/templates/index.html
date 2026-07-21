@@ -35,7 +35,13 @@
         {% endif %}
       </div>
       {% if todo.Content %}
-      <p class="todo-content">{{ todo.Content }}</p>
+      {% set is_long = todo.Content|length > 120 or todo.Content.count('\n') >= 2 %}
+      <div class="todo-content-wrap {% if is_long %}is-collapsible{% endif %}">
+        <p class="todo-content">{{ todo.Content | linkify | safe }}</p>
+      </div>
+      {% if is_long %}
+      <button type="button" class="content-toggle" data-toggle-content>続きを読む</button>
+      {% endif %}
       {% endif %}
       {% if todo.TagList %}
       <div class="tag-list">
