@@ -113,10 +113,19 @@ def _find_row_index(todo_id: str) -> int:
     raise ValueError(f"Todo not found: {todo_id}")
 
 
-def list_todos() -> list[dict]:
+SORT_KEYS = {
+    "due": lambda r: r.get("DueDate") or "9999-99-99",
+    "priority": lambda r: -int(r.get("Priority") or DEFAULT_PRIORITY),
+    "created": lambda r: r.get("CreatedAt") or "",
+}
+DEFAULT_SORT = "due"
+
+
+def list_todos(sort: str = DEFAULT_SORT) -> list[dict]:
     worksheet = _get_worksheet()
     records = [_normalize(r) for r in worksheet.get_all_records()]
-    records.sort(key=lambda r: (r.get("DueDate") or "9999-99-99"))
+    key_func = SORT_KEYS.get(sort, SORT_KEYS[DEFAULT_SORT])
+    records.sort(key=key_func)
     return records
 
 

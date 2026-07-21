@@ -2,6 +2,11 @@
 {% block title %}Todo List{% endblock %}
 {% block content %}
 <div class="toolbar">
+  <div class="sort-tabs">
+    <a href="/?sort=due" class="sort-tab {% if current_sort == 'due' %}is-active{% endif %}">期日順</a>
+    <a href="/?sort=priority" class="sort-tab {% if current_sort == 'priority' %}is-active{% endif %}">重要度順</a>
+    <a href="/?sort=created" class="sort-tab {% if current_sort == 'created' %}is-active{% endif %}">作成日順</a>
+  </div>
   <a href="/todos/new" class="btn btn-primary">+ 新しいTodoを追加</a>
 </div>
 
