@@ -10,8 +10,16 @@
     <label class="form-label" for="content">内容</label>
     <textarea id="content" name="content" rows="4" class="form-input">{{ todo.Content or '' }}</textarea>
 
-    <label class="form-label" for="due_date">期日</label>
-    <input type="date" id="due_date" name="due_date" value="{{ todo.DueDate or '' }}" class="form-input">
+    <div class="form-row">
+      <div class="form-col">
+        <label class="form-label" for="due_date">期日</label>
+        <input type="date" id="due_date" name="due_date" value="{{ todo.DueDate or '' }}" class="form-input">
+      </div>
+      <div class="form-col">
+        <label class="form-label" for="due_time">時刻（任意）</label>
+        <input type="time" id="due_time" name="due_time" value="{{ todo.DueTime or '' }}" class="form-input">
+      </div>
+    </div>
 
     <label class="form-label" for="priority">重要度</label>
     <select id="priority" name="priority" class="form-input">

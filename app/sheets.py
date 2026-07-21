@@ -12,7 +12,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SHEET_NAME = "Todos"
 HEADERS = [
     "ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt",
-    "Priority", "Category", "Tags", "Source",
+    "Priority", "Category", "Tags", "Source", "DueTime",
 ]
 
 STATUS_PENDING = "pending"
@@ -24,9 +24,10 @@ PRIORITY_MAX = 4
 
 CATEGORIES = {
     "work": "本業",
-    "secondhand": "古着",
-    "chatbot": "チャットボット案件",
+    "secondhand": "物販",
+    "chatbot": "案件",
     "personal": "私用",
+    "engineer": "エンジニア",
 }
 DEFAULT_CATEGORY = "personal"
 
@@ -141,9 +142,17 @@ def _find_row_index(todo_id: str) -> int:
     raise ValueError(f"Todo not found: {todo_id}")
 
 
+def _due_time_key(todo: dict) -> str:
+    return todo.get("DueTime") or "99:99"
+
+
 SORT_KEYS = {
-    "due": lambda r: r.get("DueDate") or "9999-99-99",
-    "priority": lambda r: -int(r.get("Priority") or DEFAULT_PRIORITY),
+    "due": lambda r: (r.get("DueDate") or "9999-99-99", _due_time_key(r)),
+    "priority": lambda r: (
+        -int(r.get("Priority") or DEFAULT_PRIORITY),
+        r.get("DueDate") or "9999-99-99",
+        _due_time_key(r),
+    ),
     "created": lambda r: r.get("CreatedAt") or "",
 }
 DEFAULT_SORT = "due"
@@ -172,13 +181,14 @@ def create_todo(
     priority: int = DEFAULT_PRIORITY,
     category: str = DEFAULT_CATEGORY,
     tags: str = "",
+    due_time: str = "",
 ) -> dict:
     worksheet = _get_worksheet()
     todo_id = str(uuid.uuid4())
     now = _now()
     row = [
         todo_id, title, content, due_date, STATUS_PENDING, now, now,
-        priority, category, _format_tags(tags), SOURCE_WEB,
+        priority, category, _format_tags(tags), SOURCE_WEB, due_time,
     ]
     worksheet.append_row(row, value_input_option="USER_ENTERED")
     return _normalize(dict(zip(HEADERS, row)))
@@ -192,6 +202,7 @@ def update_todo(
     priority: int = DEFAULT_PRIORITY,
     category: str = DEFAULT_CATEGORY,
     tags: str = "",
+    due_time: str = "",
 ) -> None:
     worksheet = _get_worksheet()
     row_index = _find_row_index(todo_id)
@@ -203,7 +214,7 @@ def update_todo(
     current_source = worksheet.cell(row_index, source_col).value or DEFAULT_SOURCE
     row = [
         todo_id, title, content, due_date, current_status, created_at, _now(),
-        priority, category, _format_tags(tags), current_source,
+        priority, category, _format_tags(tags), current_source, due_time,
     ]
     worksheet.update(
         f"A{row_index}:{LAST_COLUMN_LETTER}{row_index}", [row], value_input_option="USER_ENTERED"
