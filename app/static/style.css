@@ -276,6 +276,25 @@ body {
   flex-shrink: 0;
 }
 
+/* Priority */
+.priority-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.priority-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.priority-dot.is-filled {
+  background: var(--accent);
+  box-shadow: 0 0 4px var(--accent-glow);
+}
+
 /* Badges */
 .badge {
   display: inline-block;

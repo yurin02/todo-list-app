@@ -10,12 +10,22 @@ from google.oauth2.service_account import Credentials
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 SHEET_NAME = "Todos"
-HEADERS = ["ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt"]
+HEADERS = ["ID", "Title", "Content", "DueDate", "Status", "CreatedAt", "UpdatedAt", "Priority"]
 
 STATUS_PENDING = "pending"
 STATUS_DONE = "done"
 
-STATUS_COLUMN_LETTER = chr(ord("A") + HEADERS.index("Status"))
+DEFAULT_PRIORITY = 3
+PRIORITY_MIN = 1
+PRIORITY_MAX = 4
+
+
+def _col_letter(index0: int) -> str:
+    return chr(ord("A") + index0)
+
+
+STATUS_COLUMN_LETTER = _col_letter(HEADERS.index("Status"))
+LAST_COLUMN_LETTER = _col_letter(len(HEADERS) - 1)
 DONE_HIGHLIGHT_FORMULA = f'=${STATUS_COLUMN_LETTER}2="{STATUS_DONE}"'
 DONE_HIGHLIGHT_COLOR = {"red": 0.85, "green": 0.97, "blue": 0.88}
 
@@ -88,6 +98,12 @@ def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
+def _normalize(todo: dict) -> dict:
+    priority = todo.get("Priority")
+    todo["Priority"] = int(priority) if priority not in (None, "") else DEFAULT_PRIORITY
+    return todo
+
+
 def _find_row_index(todo_id: str) -> int:
     worksheet = _get_worksheet()
     ids = worksheet.col_values(1)
@@ -99,7 +115,7 @@ def _find_row_index(todo_id: str) -> int:
 
 def list_todos() -> list[dict]:
     worksheet = _get_worksheet()
-    records = worksheet.get_all_records()
+    records = [_normalize(r) for r in worksheet.get_all_records()]
     records.sort(key=lambda r: (r.get("DueDate") or "9999-99-99"))
     return records
 
@@ -109,27 +125,31 @@ def get_todo(todo_id: str) -> dict:
     row_index = _find_row_index(todo_id)
     values = worksheet.row_values(row_index)
     values += [""] * (len(HEADERS) - len(values))
-    return dict(zip(HEADERS, values))
+    return _normalize(dict(zip(HEADERS, values)))
 
 
-def create_todo(title: str, content: str, due_date: str) -> dict:
+def create_todo(title: str, content: str, due_date: str, priority: int = DEFAULT_PRIORITY) -> dict:
     worksheet = _get_worksheet()
     todo_id = str(uuid.uuid4())
     now = _now()
-    row = [todo_id, title, content, due_date, STATUS_PENDING, now, now]
+    row = [todo_id, title, content, due_date, STATUS_PENDING, now, now, priority]
     worksheet.append_row(row, value_input_option="USER_ENTERED")
-    return dict(zip(HEADERS, row))
+    return _normalize(dict(zip(HEADERS, row)))
 
 
-def update_todo(todo_id: str, title: str, content: str, due_date: str) -> None:
+def update_todo(
+    todo_id: str, title: str, content: str, due_date: str, priority: int = DEFAULT_PRIORITY
+) -> None:
     worksheet = _get_worksheet()
     row_index = _find_row_index(todo_id)
     status_col = HEADERS.index("Status") + 1
     created_col = HEADERS.index("CreatedAt") + 1
     current_status = worksheet.cell(row_index, status_col).value
     created_at = worksheet.cell(row_index, created_col).value
-    row = [todo_id, title, content, due_date, current_status, created_at, _now()]
-    worksheet.update(f"A{row_index}:G{row_index}", [row], value_input_option="USER_ENTERED")
+    row = [todo_id, title, content, due_date, current_status, created_at, _now(), priority]
+    worksheet.update(
+        f"A{row_index}:{LAST_COLUMN_LETTER}{row_index}", [row], value_input_option="USER_ENTERED"
+    )
 
 
 def delete_todo(todo_id: str) -> None:

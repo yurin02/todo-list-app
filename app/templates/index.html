@@ -15,6 +15,11 @@
     <div class="todo-body">
       <div class="todo-header">
         <h2 class="todo-title">{{ todo.Title }}</h2>
+        <span class="priority-dots" aria-label="重要度 {{ todo.Priority }}">
+          {% for level in range(1, 5) %}
+          <span class="priority-dot {% if level <= todo.Priority %}is-filled{% endif %}"></span>
+          {% endfor %}
+        </span>
         {% if todo.Status == 'done' %}
           <span class="badge badge-done">完了{% if todo.DueDate %} ・ {{ todo.DueDate }}{% endif %}</span>
         {% elif todo.DueDate %}
