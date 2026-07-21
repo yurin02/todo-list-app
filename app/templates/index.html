@@ -27,10 +27,10 @@
           {% endfor %}
         </span>
         {% if todo.Status == 'done' %}
-          <span class="badge badge-done">完了{% if todo.DueDate %} ・ {{ todo.DueDate }}{% endif %}</span>
+          <span class="badge badge-done">完了{% if todo.DueDate %} ・ {{ todo.DueDate }}{% if todo.DueTime %} {{ todo.DueTime }}{% endif %}{% endif %}</span>
         {% elif todo.DueDate %}
           <span class="badge {% if todo.is_overdue %}badge-overdue{% else %}badge-due{% endif %}">
-            {{ todo.DueDate }}{% if todo.is_overdue %} 期限切れ{% endif %}
+            {{ todo.DueDate }}{% if todo.DueTime %} {{ todo.DueTime }}{% endif %}{% if todo.is_overdue %} 期限切れ{% endif %}
           </span>
         {% endif %}
       </div>
