@@ -1,3 +1,5 @@
+import html
+import re
 from datetime import date
 
 from dotenv import load_dotenv
@@ -14,6 +16,19 @@ from app import sheets
 app = FastAPI(title="Todo List App")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
+_URL_PATTERN = re.compile(r"https?://[^\s<]+")
+
+
+def _linkify(text: str) -> str:
+    escaped = html.escape(text)
+    return _URL_PATTERN.sub(
+        lambda m: f'<a href="{m.group(0)}" target="_blank" rel="noopener noreferrer">{m.group(0)}</a>',
+        escaped,
+    )
+
+
+templates.env.filters["linkify"] = _linkify
 
 
 def _with_overdue_flag(todos: list[dict]) -> list[dict]:
