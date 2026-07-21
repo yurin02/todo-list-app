@@ -40,13 +40,18 @@ def new_todo_form(request: Request):
     )
 
 
+def _clamp_priority(priority: int) -> int:
+    return max(sheets.PRIORITY_MIN, min(sheets.PRIORITY_MAX, priority))
+
+
 @app.post("/todos")
 def create_todo(
     title: str = Form(...),
     content: str = Form(""),
     due_date: str = Form(""),
+    priority: int = Form(sheets.DEFAULT_PRIORITY),
 ):
-    sheets.create_todo(title=title, content=content, due_date=due_date)
+    sheets.create_todo(title=title, content=content, due_date=due_date, priority=_clamp_priority(priority))
     return RedirectResponse(url="/", status_code=303)
 
 
@@ -65,8 +70,11 @@ def update_todo(
     title: str = Form(...),
     content: str = Form(""),
     due_date: str = Form(""),
+    priority: int = Form(sheets.DEFAULT_PRIORITY),
 ):
-    sheets.update_todo(todo_id, title=title, content=content, due_date=due_date)
+    sheets.update_todo(
+        todo_id, title=title, content=content, due_date=due_date, priority=_clamp_priority(priority)
+    )
     return RedirectResponse(url="/", status_code=303)
 
 
