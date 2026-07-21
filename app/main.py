@@ -25,10 +25,12 @@ def _with_overdue_flag(todos: list[dict]) -> list[dict]:
 
 
 @app.get("/")
-def index(request: Request):
-    todos = _with_overdue_flag(sheets.list_todos())
+def index(request: Request, sort: str = sheets.DEFAULT_SORT):
+    if sort not in sheets.SORT_KEYS:
+        sort = sheets.DEFAULT_SORT
+    todos = _with_overdue_flag(sheets.list_todos(sort=sort))
     return templates.TemplateResponse(
-        "index.html", {"request": request, "todos": todos}
+        "index.html", {"request": request, "todos": todos, "current_sort": sort}
     )
 
 
