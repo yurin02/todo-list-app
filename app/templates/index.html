@@ -2,6 +2,12 @@
 {% block title %}Todo List{% endblock %}
 {% block content %}
 <div class="toolbar">
+  <div class="sort-tabs">
+    <a href="/?view=active&sort=due" class="sort-tab {% if current_view == 'active' and current_sort == 'due' %}is-active{% endif %}">期日順</a>
+    <a href="/?view=active&sort=priority" class="sort-tab {% if current_view == 'active' and current_sort == 'priority' %}is-active{% endif %}">重要度順</a>
+    <a href="/?view=active&sort=created" class="sort-tab {% if current_view == 'active' and current_sort == 'created' %}is-active{% endif %}">作成日順</a>
+    <a href="/?view=done" class="sort-tab {% if current_view == 'done' %}is-active{% endif %}">完了</a>
+  </div>
   <a href="/todos/new" class="btn btn-primary">+ 新しいTodoを追加</a>
 </div>
 
@@ -15,16 +21,35 @@
     <div class="todo-body">
       <div class="todo-header">
         <h2 class="todo-title">{{ todo.Title }}</h2>
+        <span class="badge badge-category-{{ todo.Category }}">{{ category_labels[todo.Category] }}</span>
+        <span class="priority-dots priority-level-{{ todo.Priority }}" aria-label="重要度 {{ todo.Priority }}">
+          {% for level in range(1, 5) %}
+          <span class="priority-dot {% if level <= todo.Priority %}is-filled{% endif %}"></span>
+          {% endfor %}
+        </span>
         {% if todo.Status == 'done' %}
-          <span class="badge badge-done">完了{% if todo.DueDate %} ・ {{ todo.DueDate }}{% endif %}</span>
+          <span class="badge badge-done">完了{% if todo.DueDate %} ・ {{ todo.DueDate }}{% if todo.DueTime %} {{ todo.DueTime }}{% endif %}{% endif %}</span>
         {% elif todo.DueDate %}
           <span class="badge {% if todo.is_overdue %}badge-overdue{% else %}badge-due{% endif %}">
-            {{ todo.DueDate }}{% if todo.is_overdue %} 期限切れ{% endif %}
+            {{ todo.DueDate }}{% if todo.DueTime %} {{ todo.DueTime }}{% endif %}{% if todo.is_overdue %} 期限切れ{% endif %}
           </span>
         {% endif %}
       </div>
       {% if todo.Content %}
-      <p class="todo-content">{{ todo.Content }}</p>
+      {% set is_long = todo.Content|length > 120 or todo.Content.count('\n') >= 2 %}
+      <div class="todo-content-wrap {% if is_long %}is-collapsible{% endif %}">
+        <p class="todo-content">{{ todo.Content | linkify | safe }}</p>
+      </div>
+      {% if is_long %}
+      <button type="button" class="content-toggle" data-toggle-content>続きを読む</button>
+      {% endif %}
+      {% endif %}
+      {% if todo.TagList %}
+      <div class="tag-list">
+        {% for tag in todo.TagList %}
+        <span class="tag-chip">#{{ tag }}</span>
+        {% endfor %}
+      </div>
       {% endif %}
     </div>
     <div class="todo-actions">
@@ -38,8 +63,12 @@
 </ul>
 {% else %}
 <div class="empty-state">
+  {% if current_view == 'done' %}
+  <p>完了したTodoはまだありません。</p>
+  {% else %}
   <p>まだTodoがありません。</p>
   <a href="/todos/new" class="btn btn-primary">最初のTodoを追加</a>
+  {% endif %}
 </div>
 {% endif %}
 {% endblock %}

@@ -1,3 +1,5 @@
+import html
+import re
 from datetime import date
 
 from dotenv import load_dotenv
@@ -15,6 +17,19 @@ app = FastAPI(title="Todo List App")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
+_URL_PATTERN = re.compile(r"https?://[^\s<]+")
+
+
+def _linkify(text: str) -> str:
+    escaped = html.escape(text)
+    return _URL_PATTERN.sub(
+        lambda m: f'<a href="{m.group(0)}" target="_blank" rel="noopener noreferrer">{m.group(0)}</a>',
+        escaped,
+    )
+
+
+templates.env.filters["linkify"] = _linkify
+
 
 def _with_overdue_flag(todos: list[dict]) -> list[dict]:
     today = date.today().isoformat()
@@ -25,10 +40,24 @@ def _with_overdue_flag(todos: list[dict]) -> list[dict]:
 
 
 @app.get("/")
-def index(request: Request):
-    todos = _with_overdue_flag(sheets.list_todos())
+def index(request: Request, sort: str = sheets.DEFAULT_SORT, view: str = "active"):
+    if sort not in sheets.SORT_KEYS:
+        sort = sheets.DEFAULT_SORT
+    if view not in ("active", "done"):
+        view = "active"
+    if view == "done":
+        todos = sheets.list_todos(sort="updated_desc", status=sheets.STATUS_DONE)
+    else:
+        todos = _with_overdue_flag(sheets.list_todos(sort=sort, status=sheets.STATUS_PENDING))
     return templates.TemplateResponse(
-        "index.html", {"request": request, "todos": todos}
+        "index.html",
+        {
+            "request": request,
+            "todos": todos,
+            "current_sort": sort,
+            "current_view": view,
+            "category_labels": sheets.CATEGORIES,
+        },
     )
 
 
@@ -36,8 +65,16 @@ def index(request: Request):
 def new_todo_form(request: Request):
     return templates.TemplateResponse(
         "form.html",
-        {"request": request, "mode": "new", "todo": {}},
+        {"request": request, "mode": "new", "todo": {}, "categories": sheets.CATEGORIES},
     )
+
+
+def _clamp_priority(priority: int) -> int:
+    return max(sheets.PRIORITY_MIN, min(sheets.PRIORITY_MAX, priority))
+
+
+def _clean_category(category: str) -> str:
+    return category if category in sheets.CATEGORIES else sheets.DEFAULT_CATEGORY
 
 
 @app.post("/todos")
@@ -45,8 +82,20 @@ def create_todo(
     title: str = Form(...),
     content: str = Form(""),
     due_date: str = Form(""),
+    priority: int = Form(sheets.DEFAULT_PRIORITY),
+    category: str = Form(sheets.DEFAULT_CATEGORY),
+    tags: str = Form(""),
+    due_time: str = Form(""),
 ):
-    sheets.create_todo(title=title, content=content, due_date=due_date)
+    sheets.create_todo(
+        title=title,
+        content=content,
+        due_date=due_date,
+        priority=_clamp_priority(priority),
+        category=_clean_category(category),
+        tags=tags,
+        due_time=due_time,
+    )
     return RedirectResponse(url="/", status_code=303)
 
 
@@ -55,7 +104,7 @@ def edit_todo_form(request: Request, todo_id: str):
     todo = sheets.get_todo(todo_id)
     return templates.TemplateResponse(
         "form.html",
-        {"request": request, "mode": "edit", "todo": todo},
+        {"request": request, "mode": "edit", "todo": todo, "categories": sheets.CATEGORIES},
     )
 
 
@@ -65,8 +114,21 @@ def update_todo(
     title: str = Form(...),
     content: str = Form(""),
     due_date: str = Form(""),
+    priority: int = Form(sheets.DEFAULT_PRIORITY),
+    category: str = Form(sheets.DEFAULT_CATEGORY),
+    tags: str = Form(""),
+    due_time: str = Form(""),
 ):
-    sheets.update_todo(todo_id, title=title, content=content, due_date=due_date)
+    sheets.update_todo(
+        todo_id,
+        title=title,
+        content=content,
+        due_date=due_date,
+        priority=_clamp_priority(priority),
+        category=_clean_category(category),
+        tags=tags,
+        due_time=due_time,
+    )
     return RedirectResponse(url="/", status_code=303)
 
 
