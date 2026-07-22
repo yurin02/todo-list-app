@@ -193,11 +193,16 @@ SORT_KEYS = {
 DEFAULT_SORT = "due"
 
 
-def list_todos(sort: str = DEFAULT_SORT) -> list[dict]:
+def list_todos(sort: str = DEFAULT_SORT, status: str | None = None) -> list[dict]:
     worksheet = _get_worksheet()
     records = [_normalize(r) for r in worksheet.get_all_records()]
-    key_func = SORT_KEYS.get(sort, SORT_KEYS[DEFAULT_SORT])
-    records.sort(key=key_func)
+    if status is not None:
+        records = [r for r in records if r.get("Status") == status]
+    if sort == "updated_desc":
+        records.sort(key=lambda r: r.get("UpdatedAt") or "", reverse=True)
+    else:
+        key_func = SORT_KEYS.get(sort, SORT_KEYS[DEFAULT_SORT])
+        records.sort(key=key_func)
     return records
 
 

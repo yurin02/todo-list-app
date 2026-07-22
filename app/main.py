@@ -40,16 +40,22 @@ def _with_overdue_flag(todos: list[dict]) -> list[dict]:
 
 
 @app.get("/")
-def index(request: Request, sort: str = sheets.DEFAULT_SORT):
+def index(request: Request, sort: str = sheets.DEFAULT_SORT, view: str = "active"):
     if sort not in sheets.SORT_KEYS:
         sort = sheets.DEFAULT_SORT
-    todos = _with_overdue_flag(sheets.list_todos(sort=sort))
+    if view not in ("active", "done"):
+        view = "active"
+    if view == "done":
+        todos = sheets.list_todos(sort="updated_desc", status=sheets.STATUS_DONE)
+    else:
+        todos = _with_overdue_flag(sheets.list_todos(sort=sort, status=sheets.STATUS_PENDING))
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
             "todos": todos,
             "current_sort": sort,
+            "current_view": view,
             "category_labels": sheets.CATEGORIES,
         },
     )
