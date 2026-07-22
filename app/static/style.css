@@ -10,6 +10,7 @@
   --accent-2: #0891b2;
   --accent-text: #1d4ed8;
   --accent-glow: rgba(37, 99, 235, 0.35);
+  --accent-2-glow: rgba(8, 145, 178, 0.35);
 
   --danger: #ef4444;
   --danger-dark: #b91c1c;
@@ -51,9 +52,10 @@
     --text-secondary: #9fb8d3;
 
     --accent: #38bdf8;
-    --accent-2: #0891b2;
+    --accent-2: #22d3ee;
     --accent-text: #bae6fd;
     --accent-glow: rgba(56, 189, 248, 0.45);
+    --accent-2-glow: rgba(34, 211, 238, 0.4);
 
     --danger: #f87171;
     --danger-dark: #fca5a5;
@@ -397,6 +399,21 @@ body {
 .priority-dot.is-filled {
   background: var(--accent);
   box-shadow: 0 0 4px var(--accent-glow);
+}
+
+.priority-level-4 .priority-dot.is-filled {
+  background: var(--danger);
+  box-shadow: 0 0 5px var(--danger-glow);
+}
+
+.priority-level-2 .priority-dot.is-filled {
+  background: var(--accent-2);
+  box-shadow: 0 0 4px var(--accent-2-glow);
+}
+
+.priority-level-1 .priority-dot.is-filled {
+  background: var(--text-secondary);
+  box-shadow: none;
 }
 
 /* Badges */
