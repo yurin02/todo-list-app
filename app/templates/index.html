@@ -3,9 +3,10 @@
 {% block content %}
 <div class="toolbar">
   <div class="sort-tabs">
-    <a href="/?sort=due" class="sort-tab {% if current_sort == 'due' %}is-active{% endif %}">期日順</a>
-    <a href="/?sort=priority" class="sort-tab {% if current_sort == 'priority' %}is-active{% endif %}">重要度順</a>
-    <a href="/?sort=created" class="sort-tab {% if current_sort == 'created' %}is-active{% endif %}">作成日順</a>
+    <a href="/?view=active&sort=due" class="sort-tab {% if current_view == 'active' and current_sort == 'due' %}is-active{% endif %}">期日順</a>
+    <a href="/?view=active&sort=priority" class="sort-tab {% if current_view == 'active' and current_sort == 'priority' %}is-active{% endif %}">重要度順</a>
+    <a href="/?view=active&sort=created" class="sort-tab {% if current_view == 'active' and current_sort == 'created' %}is-active{% endif %}">作成日順</a>
+    <a href="/?view=done" class="sort-tab {% if current_view == 'done' %}is-active{% endif %}">完了</a>
   </div>
   <a href="/todos/new" class="btn btn-primary">+ 新しいTodoを追加</a>
 </div>
@@ -62,8 +63,12 @@
 </ul>
 {% else %}
 <div class="empty-state">
+  {% if current_view == 'done' %}
+  <p>完了したTodoはまだありません。</p>
+  {% else %}
   <p>まだTodoがありません。</p>
   <a href="/todos/new" class="btn btn-primary">最初のTodoを追加</a>
+  {% endif %}
 </div>
 {% endif %}
 {% endblock %}
