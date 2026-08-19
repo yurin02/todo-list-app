@@ -1,4 +1,5 @@
 import html
+import os
 import re
 from datetime import date
 
@@ -6,12 +7,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app import sheets
+from app import line_notify, sheets
 
 app = FastAPI(title="Todo List App")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -142,3 +143,35 @@ def delete_todo(todo_id: str):
 def toggle_todo(todo_id: str):
     sheets.toggle_status(todo_id)
     return RedirectResponse(url="/", status_code=303)
+
+
+@app.post("/api/notify-daily")
+def notify_daily(request: Request):
+    token = request.headers.get("X-Notify-Token")
+    if not token or token != os.environ.get("NOTIFY_API_TOKEN"):
+        raise HTTPException(status_code=401, detail="invalid token")
+
+    today = line_notify.today_jst()
+    todos = sheets.list_todos(status=sheets.STATUS_PENDING)
+    due_today, overdue = line_notify.split_due_and_overdue(todos, today)
+    message = line_notify.build_message(due_today, overdue, today)
+
+    try:
+        line_notify.send_broadcast(message)
+    except Exception as exc:
+        return JSONResponse(
+            status_code=502,
+            content={
+                "sent": False,
+                "today_count": len(due_today),
+                "overdue_count": len(overdue),
+                "error": str(exc),
+            },
+        )
+
+    return {
+        "sent": True,
+        "today_count": len(due_today),
+        "overdue_count": len(overdue),
+        "error": None,
+    }
