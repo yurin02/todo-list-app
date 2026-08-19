@@ -1,4 +1,5 @@
 import html
+import os
 import re
 from datetime import date
 
@@ -6,14 +7,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi import Body, FastAPI, Form, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app import sheets
+from app import line_notify, sheets, sheets_js
 
 app = FastAPI(title="Todo List App")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://react-todo-list-web-lpgj.bolt.host",
+        "http://localhost:5173",
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
@@ -142,3 +153,90 @@ def delete_todo(todo_id: str):
 def toggle_todo(todo_id: str):
     sheets.toggle_status(todo_id)
     return RedirectResponse(url="/", status_code=303)
+
+
+@app.post("/api/notify-daily")
+def notify_daily(request: Request):
+    token = request.headers.get("X-Notify-Token")
+    if not token or token != os.environ.get("NOTIFY_API_TOKEN"):
+        raise HTTPException(status_code=401, detail="invalid token")
+
+    today = line_notify.today_jst()
+    todos = sheets_js.list_todos(completed=False)
+    due_today, overdue = line_notify.split_due_and_overdue(todos, today)
+    message = line_notify.build_message(due_today, overdue, today)
+
+    try:
+        line_notify.send_broadcast(message)
+    except Exception as exc:
+        return JSONResponse(
+            status_code=502,
+            content={
+                "sent": False,
+                "today_count": len(due_today),
+                "overdue_count": len(overdue),
+                "error": str(exc),
+            },
+        )
+
+    return {
+        "sent": True,
+        "today_count": len(due_today),
+        "overdue_count": len(overdue),
+        "error": None,
+    }
+
+
+@app.get("/api/js-todos")
+def list_js_todos():
+    return sheets_js.list_todos()
+
+
+@app.post("/api/js-todos")
+def create_js_todo(payload: dict = Body(...)):
+    return sheets_js.create_todo(
+        title=payload.get("title", ""),
+        description=payload.get("description", ""),
+        due_date=payload.get("dueDate", ""),
+        due_time=payload.get("dueTime", ""),
+        importance=payload.get("importance", sheets_js.DEFAULT_IMPORTANCE),
+        category=payload.get("category", sheets_js.DEFAULT_CATEGORY),
+        tags=payload.get("tags", []),
+        source=payload.get("source", sheets_js.DEFAULT_SOURCE),
+    )
+
+
+@app.put("/api/js-todos/{todo_id}")
+def update_js_todo(todo_id: str, payload: dict = Body(...)):
+    field_map = {
+        "title": "title",
+        "description": "description",
+        "dueDate": "due_date",
+        "dueTime": "due_time",
+        "importance": "importance",
+        "category": "category",
+        "tags": "tags",
+        "source": "source",
+    }
+    fields = {field_map[k]: v for k, v in payload.items() if k in field_map}
+    try:
+        return sheets_js.update_todo(todo_id, **fields)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="todo not found")
+
+
+@app.post("/api/js-todos/{todo_id}/toggle")
+def toggle_js_todo(todo_id: str):
+    try:
+        return sheets_js.toggle_todo(todo_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="todo not found")
+
+
+@app.delete("/api/js-todos/{todo_id}")
+def delete_js_todo(todo_id: str):
+    try:
+        sheets_js.delete_todo(todo_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="todo not found")
+    return {"deleted": True}
