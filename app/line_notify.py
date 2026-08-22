@@ -76,6 +76,21 @@ def build_message(due_today: list[dict], overdue: list[dict], today: date) -> st
     return "\n".join(lines)
 
 
+def build_created_message(todo: dict) -> str:
+    lines = ["🆕 新しいTodoが追加されました", f"・{todo.get('Title', '')}"]
+    due_date = todo.get("DueDate") or ""
+    if due_date:
+        due_label = due_date
+        due_time = todo.get("DueTime") or ""
+        if due_time:
+            due_label += f" {due_time}"
+        lines.append(f"期限: {due_label}")
+    else:
+        lines.append("期限: 未設定")
+    lines.append(f"カテゴリ: {_category_label(todo)}")
+    return "\n".join(lines)
+
+
 def send_broadcast(message: str) -> None:
     configuration = Configuration(access_token=os.environ["LINE_CHANNEL_ACCESS_TOKEN"])
     with ApiClient(configuration) as api_client:

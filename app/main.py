@@ -194,7 +194,7 @@ def list_js_todos():
 
 @app.post("/api/js-todos")
 def create_js_todo(payload: dict = Body(...)):
-    return sheets_js.create_todo(
+    todo = sheets_js.create_todo(
         title=payload.get("title", ""),
         description=payload.get("description", ""),
         due_date=payload.get("dueDate", ""),
@@ -204,6 +204,11 @@ def create_js_todo(payload: dict = Body(...)):
         tags=payload.get("tags", []),
         source=payload.get("source", sheets_js.DEFAULT_SOURCE),
     )
+    try:
+        line_notify.send_broadcast(line_notify.build_created_message(todo))
+    except Exception:
+        pass
+    return todo
 
 
 @app.put("/api/js-todos/{todo_id}")
