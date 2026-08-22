@@ -37,6 +37,8 @@ Python(FastAPI)製のTodoリスト管理Webアプリ。データはGoogleスプ�
 4. **配色をピンク系に変更**
 5. **配色を青系に変更**([#1](https://github.com/yurin02/todo-list-app/pull/1)) — タイトル・ボタン・背景グラデーションなどのアクセントカラーを見直し
 6. **完了ステータスの可視化**([#2](https://github.com/yurin02/todo-list-app/pull/2)) — 完了したTodoをカードの色分け・バッジで分かりやすくし、連携先のGoogleスプレッドシートにも条件付き書式で色分けを反映
+7. **LINE日次通知・JS版アプリ連携用APIを追加**([#5](https://github.com/yurin02/todo-list-app/pull/5)) — line-bot-sdkを使い、期限切れ・今日期限のTodoをJST基準でLINEに通知する`/api/notify-daily`を追加。あわせて、同要件をReact/TypeScriptで再実装した[bolt-todo-app](https://github.com/yurin02/bolt-todo-app)向けに専用のGoogleスプレッドシート・JSON API(`/api/js-todos`)・CORS設定を追加し、通知対象をそちらに接続
+8. **Todo作成時の即時LINE通知**([#6](https://github.com/yurin02/todo-list-app/pull/6)) — Todoを追加した瞬間に確認メッセージをLINEへ送信
 
 ## ローカルでの起動方法
 
